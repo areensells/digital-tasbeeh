@@ -173,19 +173,19 @@ var UI={
      done:"Target reached. MashaAllah!",newT:"Custom target",newD:"New dhikr",
      name:"Dhikr name (optional)",num:"Target number",cancel:"Cancel",saveB:"Save",
      confirmReset:"Reset this counter to 0?",foot:"Works offline. Your counts stay on your device.",
-     add:"+ Add dhikr",free:"Free count"},
+     add:"+ Add dhikr",free:"Free count",privacy:"Privacy Policy"},
  ur:{title:"ڈیجیٹل تسبیح",undo:"واپس",reset:"ری سیٹ",vibOn:"وائبریشن: آن",vibOff:"وائبریشن: آف",
      today:"آج کی کل گنتی",all:"اس ذکر کی کل گنتی",target:"ہدف",of:"از",custom:"اپنا",
      done:"ہدف پورا ہوا۔ ماشاءاللہ!",newT:"اپنا ہدف",newD:"نیا ذکر",
      name:"ذکر کا نام (اختیاری)",num:"ہدف کی تعداد",cancel:"منسوخ",saveB:"محفوظ",
      confirmReset:"کیا اس گنتی کو 0 کرنا ہے؟",foot:"آف لائن کام کرتی ہے۔ آپ کی گنتی آپ کے فون میں رہتی ہے۔",
-     add:"+ ذکر شامل کریں",free:"آزاد گنتی"},
+     add:"+ ذکر شامل کریں",free:"آزاد گنتی",privacy:"رازداری کی پالیسی"},
  ar:{title:"المسبحة الرقمية",undo:"تراجع",reset:"إعادة",vibOn:"الاهتزاز: تشغيل",vibOff:"الاهتزاز: إيقاف",
      today:"مجموع اليوم",all:"مجموع هذا الذكر",target:"الهدف",of:"من",custom:"مخصص",
      done:"تم بلوغ الهدف. ما شاء الله!",newT:"هدف مخصص",newD:"ذكر جديد",
      name:"اسم الذكر (اختياري)",num:"عدد الهدف",cancel:"إلغاء",saveB:"حفظ",
      confirmReset:"هل تريد إعادة العداد إلى 0؟",foot:"يعمل بدون إنترنت. عدّاتك تبقى على جهازك.",
-     add:"+ إضافة ذكر",free:"عدّ حر"}
+     add:"+ إضافة ذكر",free:"عدّ حر",privacy:"سياسة الخصوصية"}
 };
 
 /* ---------- state ---------- */
@@ -259,7 +259,7 @@ function renderStatic(){
   $("vib").classList.toggle("on",S.vib);
   $("lToday").textContent=l.today;
   $("lAll").textContent=l.all;
-  $("foot").textContent=l.foot;
+  $("foot").innerHTML=esc(l.foot)+'<br><a href="privacy.html" style="color:var(--gold2)">'+esc(l.privacy)+'</a>';
 }
 function renderAll(){applyLang();renderStatic();renderChips();renderPhrase();renderTargets();renderCount()}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
