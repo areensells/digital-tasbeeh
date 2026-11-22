@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#06231a">
+<meta name="description" content="Digital Tasbeeh - a simple, calm dhikr counter in English, Urdu and Arabic.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Digital Tasbeeh</title>
+<style>
+:root{
+  --bg:#06231a; --bg2:#0a3326; --card:#0d3a2b; --line:#1c5a44;
+  --gold:#d9b44a; --gold2:#f1d98a; --text:#f4efe0; --muted:#9fc4b4;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overscroll-behavior:none}
+body{background:radial-gradient(1200px 600px at 50% -10%,var(--bg2),var(--bg));
+  padding:env(safe-area-inset-top) 16px calc(env(safe-area-inset-bottom) + 16px)}
+.app{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding-bottom:20px}
+header{display:flex;align-items:center;justify-content:space-between;padding-top:14px}
+h1{font-size:20px;margin:0;color:var(--gold2);letter-spacing:.3px}
+.langs{display:flex;gap:6px}
+.langs button{background:transparent;border:1px solid var(--line);color:var(--muted);
+  padding:6px 10px;border-radius:999px;font-size:13px;cursor:pointer}
+.langs button.on{background:var(--gold);color:#241b00;border-color:var(--gold);font-weight:600}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;background:var(--card);border:1px solid var(--line);color:var(--text);
+  padding:9px 14px;border-radius:999px;font-size:14px;cursor:pointer;white-space:nowrap}
+.chip.on{border-color:var(--gold);color:var(--gold2);box-shadow:0 0 0 1px var(--gold) inset}
+.phrase{text-align:center;padding:4px 8px}
+.ar{font-family:"Amiri","Noto Naskh Arabic","Traditional Arabic","Scheherazade New",serif;
+  font-size:38px;line-height:1.6;color:var(--gold2);direction:rtl}
+.trans{font-size:16px;margin-top:2px}
+.mean{font-size:13px;color:var(--muted);margin-top:2px}
+.stage{position:relative;width:min(78vw,320px);aspect-ratio:1;margin:0 auto}
+.stage svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--line);stroke-width:8}
+.ring-fg{fill:none;stroke:var(--gold);stroke-width:8;stroke-linecap:round;
+  transition:stroke-dashoffset .18s ease}
+#tap{position:absolute;inset:16px;border-radius:50%;border:0;cursor:pointer;
+  background:radial-gradient(circle at 35% 30%,#17604a,#0b3a2b 70%);
+  color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 2px 0 rgba(255,255,255,.08);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;
+  transition:transform .06s ease}
+#tap:active,#tap.press{transform:scale(.96)}
+#count{font-size:76px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:#fff}
+#of{font-size:15px;color:var(--muted);margin-top:6px}
+.done{text-align:center;min-height:22px;color:var(--gold2);font-weight:600;font-size:15px}
+.targets{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;align-items:center}
+.t{background:var(--card);border:1px solid var(--line);color:var(--text);min-width:52px;
+  padding:8px 12px;border-radius:12px;font-size:15px;cursor:pointer}
+.t.on{background:var(--gold);border-color:var(--gold);color:#241b00;font-weight:700}
+.row{display:flex;gap:10px}
+.btn{flex:1;background:var(--card);border:1px solid var(--line);color:var(--text);
+  padding:12px;border-radius:14px;font-size:15px;cursor:pointer}
+.btn.danger{color:#ffb4a8}
+.btn.on{border-color:var(--gold);color:var(--gold2)}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:24px;color:var(--gold2);font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+.modal.show{display:flex}
+.box{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:18px;width:100%;max-width:360px}
+.box h2{margin:0 0 12px;font-size:17px;color:var(--gold2)}
+.box input{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);font-size:16px;margin-bottom:10px}
+.foot{text-align:center;font-size:12px;color:var(--muted);padding-top:4px}
+[dir=rtl] .app{direction:rtl}
+[dir=rtl] header{flex-direction:row-reverse}
+[dir=rtl] .langs{direction:ltr}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1 id="title">Digital Tasbeeh</h1>
+    <div class="langs">
+      <button data-l="en">EN</button>
+      <button data-l="ur">اردو</button>
+      <button data-l="ar">عربي</button>
+    </div>
+  </header>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="phrase">
+    <div class="ar" id="ar"></div>
+    <div class="trans" id="trans"></div>
+    <div class="mean" id="mean"></div>
+  </div>
+
+  <div class="stage">
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <circle class="ring-bg" cx="50" cy="50" r="45"/>
+      <circle class="ring-fg" id="ring" cx="50" cy="50" r="45"/>
+    </svg>
+    <button id="tap" aria-label="Count">
+      <div id="count">0</div>
+      <div id="of"></div>
+    </button>
+  </div>
+
+  <div class="done" id="done" aria-live="polite"></div>
+
+  <div class="targets" id="targets"></div>
+
+  <div class="row">
+    <button class="btn" id="undo"></button>
+    <button class="btn danger" id="reset"></button>
+    <button class="btn" id="vib"></button>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><b id="sToday">0</b><span id="lToday"></span></div>
+    <div class="stat"><b id="sAll">0</b><span id="lAll"></span></div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="box">
+    <h2 id="mTitle"></h2>
+    <input id="mName" maxlength="40" autocomplete="off">
+    <input id="mNum" type="number" min="1" max="100000" inputmode="numeric">
+    <div class="row">
+      <button class="btn" id="mCancel"></button>
+      <button class="btn on" id="mSave"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- storage (safe) ---------- */
+var KEY="digital-tasbeeh-v1";
+function load(){try{var s=localStorage.getItem(KEY);return s?JSON.parse(s):null}catch(e){return null}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* ---------- data ---------- */
+var DHIKR=[
+ {id:"sub",ar:"سُبْحَانَ ٱللَّهِ",tr:"SubhanAllah",
+  mean:{en:"Glory be to Allah",ur:"اللہ پاک ہے",ar:"تنزيهًا لله"},
+  name:{en:"SubhanAllah",ur:"سبحان اللہ",ar:"سبحان الله"},t:33},
+ {id:"alh",ar:"ٱلْحَمْدُ لِلَّهِ",tr:"Alhamdulillah",
+  mean:{en:"All praise is for Allah",ur:"تمام تعریفیں اللہ کے لیے ہیں",ar:"الثناء كله لله"},
+  name:{en:"Alhamdulillah",ur:"الحمد للہ",ar:"الحمد لله"},t:33},
+ {id:"akb",ar:"ٱللَّهُ أَكْبَرُ",tr:"Allahu Akbar",
+  mean:{en:"Allah is the Greatest",ur:"اللہ سب سے بڑا ہے",ar:"الله أعظم من كل شيء"},
+  name:{en:"Allahu Akbar",ur:"اللہ اکبر",ar:"الله أكبر"},t:34},
+ {id:"ast",ar:"أَسْتَغْفِرُ ٱللَّهَ",tr:"Astaghfirullah",
+  mean:{en:"I seek forgiveness from Allah",ur:"میں اللہ سے معافی مانگتا ہوں",ar:"أطلب المغفرة من الله"},
+  name:{en:"Astaghfirullah",ur:"استغفر اللہ",ar:"أستغفر الله"},t:100},
+ {id:"lai",ar:"لَا إِلَٰهَ إِلَّا ٱللَّهُ",tr:"La ilaha illallah",
+  mean:{en:"There is no god but Allah",ur:"اللہ کے سوا کوئی معبود نہیں",ar:"لا معبود بحق إلا الله"},
+  name:{en:"La ilaha illallah",ur:"لا الٰہ الا اللہ",ar:"لا إله إلا الله"},t:100},
+ {id:"sal",ar:"ٱللَّهُمَّ صَلِّ عَلَىٰ مُحَمَّدٍ",tr:"Allahumma salli ala Muhammad",
+  mean:{en:"O Allah, send blessings upon Muhammad ﷺ",ur:"اے اللہ! محمد ﷺ پر درود بھیج",ar:"اللهم صل على محمد ﷺ"},
+  name:{en:"Salawat",ur:"درود شریف",ar:"الصلاة على النبي"},t:100}
+];
+
+var UI={
+ en:{title:"Digital Tasbeeh",undo:"Undo",reset:"Reset",vibOn:"Vibrate: On",vibOff:"Vibrate: Off",
+     today:"Total today",all:"Total for this dhikr",target:"Target",of:"of",custom:"Custom",
+     done:"Target reached. MashaAllah!",newT:"Custom target",newD:"New dhikr",
+     name:"Dhikr name (optional)",num:"Target number",cancel:"Cancel",saveB:"Save",
+     confirmReset:"Reset this counter to 0?",foot:"Works offline. Your counts stay on your device.",
+     add:"+ Add dhikr",free:"Free count"},
+ ur:{title:"ڈیجیٹل تسبیح",undo:"واپس",reset:"ری سیٹ",vibOn:"وائبریشن: آن",vibOff:"وائبریشن: آف",
+     today:"آج کی کل گنتی",all:"اس ذکر کی کل گنتی",target:"ہدف",of:"از",custom:"اپنا",
+     done:"ہدف پورا ہوا۔ ماشاءاللہ!",newT:"اپنا ہدف",newD:"نیا ذکر",
+     name:"ذکر کا نام (اختیاری)",num:"ہدف کی تعداد",cancel:"منسوخ",saveB:"محفوظ",
+     confirmReset:"کیا اس گنتی کو 0 کرنا ہے؟",foot:"آف لائن کام کرتی ہے۔ آپ کی گنتی آپ کے فون میں رہتی ہے۔",
+     add:"+ ذکر شامل کریں",free:"آزاد گنتی"},
+ ar:{title:"المسبحة الرقمية",undo:"تراجع",reset:"إعادة",vibOn:"الاهتزاز: تشغيل",vibOff:"الاهتزاز: إيقاف",
+     today:"مجموع اليوم",all:"مجموع هذا الذكر",target:"الهدف",of:"من",custom:"مخصص",
+     done:"تم بلوغ الهدف. ما شاء الله!",newT:"هدف مخصص",newD:"ذكر جديد",
+     name:"اسم الذكر (اختياري)",num:"عدد الهدف",cancel:"إلغاء",saveB:"حفظ",
+     confirmReset:"هل تريد إعادة العداد إلى 0؟",foot:"يعمل بدون إنترنت. عدّاتك تبقى على جهازك.",
+     add:"+ إضافة ذكر",free:"عدّ حر"}
+};
+
+/* ---------- state ---------- */
+function today(){var d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()}
+var S=load()||{lang:"en",cur:"sub",vib:true,counts:{},totals:{},targets:{},days:{},customs:[],last:today()};
+S.counts=S.counts||{};S.totals=S.totals||{};S.targets=S.targets||{};S.days=S.days||{};S.customs=S.customs||[];
+var history=[];            // undo stack of dhikr ids
+var reached=false;
+
+function all(){
+  return DHIKR.concat(S.customs.map(function(c){
+    return {id:c.id,ar:"",tr:c.name||"",mean:{},name:{en:c.name||"",ur:c.name||"",ar:c.name||""},t:c.t,custom:true};
+  }));
+}
+function curD(){var a=all();for(var i=0;i<a.length;i++)if(a[i].id===S.cur)return a[i];S.cur="sub";return a[0]}
+function tgt(d){return S.targets[d.id]||d.t}
+function L(){return UI[S.lang]}
+function $(id){return document.getElementById(id)}
+
+/* ---------- render ---------- */
+function applyLang(){
+  var rtl=S.lang!=="en";
+  document.documentElement.lang=S.lang;
+  document.documentElement.dir=rtl?"rtl":"ltr";
+  document.title=L().title;
+  var b=document.querySelectorAll(".langs button");
+  for(var i=0;i<b.length;i++)b[i].classList.toggle("on",b[i].dataset.l===S.lang);
+}
+function renderChips(){
+  var h="";
+  all().forEach(function(d){
+    var n=d.name[S.lang]||d.name.en;
+    h+='<button class="chip'+(d.id===S.cur?' on':'')+'" data-id="'+d.id+'">'+esc(n)+'</button>';
+  });
+  h+='<button class="chip" data-add="1">'+esc(L().add)+'</button>';
+  $("chips").innerHTML=h;
+}
+function renderTargets(){
+  var d=curD(),t=tgt(d),opts=[33,99,100],h="";
+  opts.forEach(function(n){h+='<button class="t'+(t===n?' on':'')+'" data-t="'+n+'">'+n+'</button>'});
+  var isCustom=opts.indexOf(t)<0;
+  h+='<button class="t'+(isCustom?' on':'')+'" data-t="c">'+(isCustom?t:esc(L().custom))+'</button>';
+  $("targets").innerHTML=h;
+}
+function renderPhrase(){
+  var d=curD();
+  $("ar").textContent=d.ar||"";
+  $("ar").style.display=d.ar?"":"none";
+  $("trans").textContent=d.custom?(d.name.en||""):d.tr;
+  $("mean").textContent=d.mean[S.lang]||d.mean.en||"";
+}
+function renderCount(){
+  var d=curD(),c=S.counts[d.id]||0,t=tgt(d);
+  $("count").textContent=c;
+  $("of").textContent=L().of+" "+t;
+  var C=2*Math.PI*45;
+  var ring=$("ring");
+  ring.style.strokeDasharray=C;
+  ring.style.strokeDashoffset=C*(1-Math.min(c/t,1));
+  ring.style.opacity=c>0?1:0;
+  $("done").textContent=(c>=t&&c>0)?L().done:"";
+  $("sToday").textContent=S.days[today()]||0;
+  $("sAll").textContent=S.totals[d.id]||0;
+}
+function renderStatic(){
+  var l=L();
+  $("title").textContent=l.title;
+  $("undo").textContent=l.undo;
+  $("reset").textContent=l.reset;
+  $("vib").textContent=S.vib?l.vibOn:l.vibOff;
+  $("vib").classList.toggle("on",S.vib);
+  $("lToday").textContent=l.today;
+  $("lAll").textContent=l.all;
+  $("foot").textContent=l.foot;
+}
+function renderAll(){applyLang();renderStatic();renderChips();renderPhrase();renderTargets();renderCount()}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+
+/* ---------- actions ---------- */
+function buzz(p){if(S.vib&&navigator.vibrate){try{navigator.vibrate(p)}catch(e){}}}
+
+function tap(){
+  var d=curD(),t=tgt(d);
+  var c=(S.counts[d.id]||0)+1;
+  S.counts[d.id]=c;
+  S.totals[d.id]=(S.totals[d.id]||0)+1;
+  var k=today();S.days[k]=(S.days[k]||0)+1;
+  history.push(d.id);if(history.length>500)history.shift();
+  if(c===t)buzz([200,80,200,80,400]);else buzz(15);
+  save();renderCount();
+}
+function undo(){
+  var id=history.pop();if(!id)return;
+  if((S.counts[id]||0)>0){
+    S.counts[id]--;
+    S.totals[id]=Math.max(0,(S.totals[id]||0)-1);
+    var k=today();S.days[k]=Math.max(0,(S.days[k]||0)-1);
+    if(id!==S.cur){S.cur=id;renderChips();renderPhrase();renderTargets()}
+    buzz(10);save();renderCount();
+  }
+}
+function resetCur(){
+  var d=curD();
+  if(!(S.counts[d.id]>0))return;
+  if(!confirm(L().confirmReset))return;
+  S.counts[d.id]=0;
+  history=history.filter(function(x){return x!==d.id});
+  save();renderCount();
+}
+function selectD(id){S.cur=id;save();renderChips();renderPhrase();renderTargets();renderCount()}
+
+/* ---------- modal ---------- */
+var modalMode=null;
+function openModal(mode){
+  modalMode=mode;var l=L();
+  $("mTitle").textContent=mode==="target"?l.newT:l.newD;
+  $("mName").style.display=mode==="dhikr"?"":"none";
+  $("mName").placeholder=l.name;$("mName").value="";
+  $("mNum").placeholder=l.num;$("mNum").value="";
+  $("mCancel").textContent=l.cancel;$("mSave").textContent=l.saveB;
+  $("modal").classList.add("show");
+  setTimeout(function(){(mode==="dhikr"?$("mName"):$("mNum")).focus()},50);
+}
+function closeModal(){$("modal").classList.remove("show")}
+function saveModal(){
+  var n=parseInt($("mNum").value,10);
+  if(!(n>=1))n=33;
+  if(n>100000)n=100000;
+  if(modalMode==="target"){
+    S.targets[S.cur]=n;
+  }else{
+    var id="c"+Date.now();
+    S.customs.push({id:id,name:$("mName").value.trim()||L().free,t:n});
+    S.cur=id;
+  }
+  save();closeModal();renderChips();renderPhrase();renderTargets();renderCount();
+}
+
+/* ---------- events ---------- */
+var tapBtn=$("tap");
+// pointerdown gives instant response on phones; click is ignored to avoid double count
+tapBtn.addEventListener("pointerdown",function(e){e.preventDefault();tapBtn.classList.add("press");tap()});
+["pointerup","pointerleave","pointercancel"].forEach(function(ev){
+  tapBtn.addEventListener(ev,function(){tapBtn.classList.remove("press")})});
+tapBtn.addEventListener("keydown",function(e){
+  if(e.key===" "||e.key==="Enter"){e.preventDefault();if(!e.repeat)tap()}});
+document.addEventListener("keydown",function(e){
+  if($("modal").classList.contains("show"))return;
+  if(e.target===tapBtn)return;
+  if(e.key===" "){e.preventDefault();tap()}
+});
+$("undo").addEventListener("click",undo);
+$("reset").addEventListener("click",resetCur);
+$("vib").addEventListener("click",function(){S.vib=!S.vib;save();renderStatic();if(S.vib)buzz(30)});
+$("chips").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.add)openModal("dhikr");else selectD(b.dataset.id);
+});
+$("targets").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  if(b.dataset.t==="c")openModal("target");
+  else{S.targets[S.cur]=parseInt(b.dataset.t,10);save();renderTargets();renderCount()}
+});
+document.querySelector(".langs").addEventListener("click",function(e){
+  var b=e.target.closest("button");if(!b)return;
+  S.lang=b.dataset.l;save();renderAll();
+});
+$("mCancel").addEventListener("click",closeModal);
+$("mSave").addEventListener("click",saveModal);
+$("modal").addEventListener("click",function(e){if(e.target===$("modal"))closeModal()});
+
+/* ---------- housekeeping ---------- */
+// prune day totals older than 60 days to keep storage small
+(function(){
+  var keys=Object.keys(S.days);
+  if(keys.length>60){keys.sort(function(a,b){return new Date(a)-new Date(b)});
+    keys.slice(0,keys.length-60).forEach(function(k){delete S.days[k]})}
+})();
+
+renderAll();
+
+if("serviceWorker" in navigator&&location.protocol.indexOf("http")===0){
+  window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){})});
+}
+})();
+</script>
+</body>
+</html>
